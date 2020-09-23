@@ -4,5 +4,8 @@
     "description": "Custom bot for the Minetopia Discord Server",
     "main": "bot.js",
     "author": "Adam Linscott",
-    "dependencies": {}
+    "dependencies": {
+        "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+        "winston": "^3.3.3"
+    }
 }
