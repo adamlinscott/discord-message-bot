@@ -1,0 +1,8 @@
+{
+    "name": "minetopia-bot",
+    "version": "0.1.0",
+    "description": "Custom bot for the Minetopia Discord Server",
+    "main": "bot.js",
+    "author": "Adam Linscott",
+    "dependencies": {}
+}
