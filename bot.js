@@ -33,6 +33,11 @@ bot.on('message', (user, userID, channelID, message, event) => {
                     to: channelID,
                     message: 'Pong!'
                 });
+            case 'help':
+                bot.sendMessage({
+                    to: channelID,
+                    message: "I don't do much curently. Try again another time!"
+                });
             break;
             // Just add any case commands if you want to..
          }
