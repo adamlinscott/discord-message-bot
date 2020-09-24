@@ -39,7 +39,6 @@ bot.on('message', (user, userID, channelID, message, event) => {
                     message: "I don't do much curently. Try again another time!"
                 });
             break;
-            // Just add any case commands if you want to..
          }
      }
 })
