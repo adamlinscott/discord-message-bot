@@ -1,41 +1,57 @@
-var Discord = require('discord.io');
-var logger = require('winston');
-var auth = require('./auth.json');
+require('dotenv').config();
+const { Client, Collection, Intents } = require('discord.js');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
 
-//Logger settings
-logger.remove(logger.transports.Console);
-logger.add(new logger.transports.Console, {
-    colorize: true
+/// Register commands
+const fs = require('node:fs');
+const path = require('node:path');
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+const commands = []
+
+for (const file of commandFiles) {
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
+	commands.push(command.data.toJSON());
+}
+
+const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+
+rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: commands })
+	.then(() => console.log('Successfully registered application commands.'))
+	.catch(console.error);
+
+/// Set up client
+const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+
+client.once('ready', () => {
+	console.log('Ready!');
 });
-logger.level = 'debug';
 
-//init bot
-var bot = new Discord.Client({
-    token: auth.token,
-    autorun: true
+client.commands = new Collection();
+
+for (const file of commandFiles) {
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
+	client.commands.set(command.data.name, command);
+}
+
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
+
+	const command = client.commands.get(interaction.commandName);
+
+	if (!command) return;
+
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
 });
 
-bot.on('ready', (event) => {
-    logger.info('Connected');
-    logger.info('Logged in as: ' + bot.username + ' - (' + bot.id + ')');
-});
-
-bot.on('message', (user, userID, channelID, message, event) => {
-    if (message.substring(0, 1) == '!') {
-        var args = message.substring(1).split(' ');
-        var cmd = args[0];
-        args = args.splice(1);
-
-        switch(cmd) {
-            // !ping
-            case 'ping':
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'Pong!'
-                });
-            break;
-            // Just add any case commands if you want to..
-         }
-     }
-})
-
+// Login to Discord with your client's token
+client.login(process.env.TOKEN);
